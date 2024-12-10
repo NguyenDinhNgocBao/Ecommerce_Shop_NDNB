@@ -1,0 +1,51 @@
+﻿@model ProductModel;
+@{
+    ViewData["title"] = "Update Product";
+    var successMessage = TempData["SuccessMessage"] as string;
+}
+<form asp-action="Update" enctype="multipart/form-data" class="p-4 border rounded shadow-sm bg-light">
+    <h1>UPDATE</h1>
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="mb-3 form-group">
+        <label class="form-label fw-semibold">Name</label>
+        <input class="form-control" asp-for="Name" />
+        <span asp-validation-for="Name" class="text-danger" />
+    </div>
+    <div class="mb-3 form-group">
+        <label class="form-label fw-semibold">Price</label>
+        <input type="number" class="form-control" asp-for="Price" />
+        <span asp-validation-for="Price" class="text-danger" />
+    </div>
+    <div class="mb-3 form-group">
+        <label class="form-label fw-semibold">Description</label>
+        <input class="form-control" asp-for="Description" />
+        <span asp-validation-for="Description" class="text-danger" />
+    </div>
+    <div class="mb-3 form-group">
+        <label class="form-label fw-semibold">Category</label>
+        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+            <option selected>Select Category</option>
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+    <div class="mb-3 form-group">
+        <label class="form-label fw-semibold">Brand</label>
+        <select asp-for="BrandId" asp-items="ViewBag.Brands" class="form-select">
+            <option selected>Select Brand</option>
+        </select>
+        <span asp-validation-for="BrandId" class="text-danger"></span>
+    </div>
+    <div class="mb-3 form-group">
+        <label class="form-label fw-semibold">Image</label>
+        <input class="form-control" asp-for="ImageUpload" />
+        <span asp-validation-for="ImageUpload" class="text-danger" />
+        <img src="/image/@Model.Image" width="120" alt="Product Image" />
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary fw-bold px-4">Submit</button>
+        <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">Back to List</a>
+    </div>
+</form>
+
+

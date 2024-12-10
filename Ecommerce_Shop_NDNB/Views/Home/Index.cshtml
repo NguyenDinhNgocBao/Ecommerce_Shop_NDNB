@@ -1,0 +1,95 @@
+﻿@model IEnumerable<ProductModel>
+
+<div class="col-sm-3">
+	@Html.Partial("_Sidebar")
+</div>
+
+<style>
+    .product-image-wrapper{
+        height: 530px;
+    }
+    .image-product{
+        max-height: 250px;
+    }
+</style>
+
+<div class="col-sm-9 padding-right">
+	<div class="features_items">
+		<!--features_items-->
+		<h2 class="title text-center">Features Items</h2>
+		@foreach(var item in Model)
+		{
+            <div class="col-sm-4">
+				<div class="product-image-wrapper">
+					<div class="single-products justify">
+						<div class="productinfo text-center">
+							<a asp-action="Details" asp-controller="Product" asp-route-Id="@item.Id">
+								<img class="image-product" src="~/image/@item.Image" alt="" />
+								<h2>@item.Price</h2>
+								<p>@item.Name</p>
+								<p>Danh mục: @item.Category.Name</p>
+								<p>Thương hiệu: @item.Brand.Name</p>
+							</a>
+                            <button type="button" onclick="addToCart(@item.Id)" class="btn btn-defaut add-to-cart"><i class="fa-solid fa-cart-shopping"></i>Add to Cart</button>
+						</div>
+                        <!--
+                            <div class="product-overlay">
+                                <div class="overlay-content">
+                                    <h2>@item.Price</h2>
+                                    <p>@item.Name</p>
+                                    <a class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+                                </div>
+                            </div>
+                            -->
+					</div>
+				    <div class="choose">
+						<ul class="nav nav-pills nav-justified">
+							<li><a href="#"><i class="fa fa-plus-square"></i>Add to wishlist</a></li>
+							<li><a href="#"><i class="fa fa-plus-square"></i>Add to compare</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		}
+		
+	</div><!--features_items-->
+
+
+</div>
+
+<!-- SweetAlert Script -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function addToCart(productId) {
+        $.ajax({
+            url: '@Url.Action("Add", "Cart")',
+            type: 'POST',
+            data: { id: productId },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    // Cập nhật số lượng sản phẩm trong giỏ hàng hoặc hiển thị thông báo thêm thành công
+                    updateCartCount();
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Không thể thêm sản phẩm vào giỏ hàng.'
+                });
+            }
+        });
+    }
+
+    // Hàm cập nhật số lượng sản phẩm trong giỏ hàng
+    function updateCartCount() {
+        // Logic để cập nhật số lượng trong giỏ hàng, ví dụ: gọi AJAX để lấy số lượng hiện tại
+    }
+</script>
