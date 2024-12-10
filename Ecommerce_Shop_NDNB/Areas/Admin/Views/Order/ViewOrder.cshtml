@@ -1,0 +1,35 @@
+﻿@model IEnumerable<OrderDetails>
+@{
+    ViewData["Title"] = "Chi tiết Đơn Hàng";
+}
+
+<h1>Detail Order</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">UserName</th>
+            <th scope="col">Order Code</th>
+            <th scope="col">Product</th>
+            <th scope="col">Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">SUM</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.UserName</td>
+                <td>@item.OrderCode</td>
+                <td>@item.Products.Name</td>
+                <td>@item.Price.ToString("C")</td>
+                <td>@item.Quantity</td>
+                <td>$@(item.Quantity * item.Price)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="Index" class="btn btn-secondary">Quay Lại</a>
+

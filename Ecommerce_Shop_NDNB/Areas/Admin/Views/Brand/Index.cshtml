@@ -1,0 +1,82 @@
+﻿@model IEnumerable<BrandModel>
+@{
+    ViewData["title"] = "Brands List";
+    int stt = 1;
+}
+<h1>List Category</h1>
+<div>
+    <a asp-action="Create" asp-controller="Brand" type="button" class="btn btn-primary btn-lg">Add</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Stt</th>
+            <th scope="col">Brand Name</th>
+            <th scope="col">Brand Description</th>
+            <th scope="col">Brand Slug</th>
+            <th scope="col">Brand Status</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@stt</th>
+                <td>@item.Name</td>
+                <td>@Html.Raw(@item.Description)</td>
+                <td>@item.Slug</td>
+                <td>
+                    @if (@item.Status == 1)
+                    {
+                        <span class="text text-success">Show</span>
+                    }
+                    else
+                    {
+                        <span class="text text-danger">Hide</span>
+                    }
+                </td>
+
+                <td>
+                    <a asp-action="Update" asp-controller="Brand" asp-route-Id="@item.Id" type="button" class="btn btn-success">Edit</a>
+                    <button type="button" onclick="confirmDelete('@Url.Action("Delete", "Brand", new { Id = item.Id })')" class="btn btn-danger">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            stt++;
+        }
+    </tbody>
+</table>
+<script>
+    function confirmDelete(url) {
+        Swal.fire({
+            title: 'Xóa Thương Hiệu',
+            text: "Bạn có chắc muốn xóa Thương Hiệu này không?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'Không',
+            confirmButtonText: 'Có'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'success',
+                title: 'Thành công',
+                text: '@TempData["SuccessMessage"]',
+                timer: 3000,
+                showConfirmButton: false
+                    });
+        </text>
+    }
+</script>

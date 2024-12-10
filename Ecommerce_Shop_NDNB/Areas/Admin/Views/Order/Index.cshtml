@@ -1,0 +1,49 @@
+﻿@model IEnumerable<OrderModel>
+@{
+    ViewData["Title"] = "Đơn Hàng";
+    int stt = 1;
+}
+
+<h1>List Order</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Stt</th>
+            <th scope="col">Order Code</th>
+            <th scope="col">UserName</th>
+            <th scope="col">Order Date</th>
+            <th scope="col">Order Status</th>
+        </tr>
+    </thead>
+    <tbody>
+            
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@stt</th>
+                <td>@item.OrderCode</td>
+                <td>@item.UserName</td>
+                <td>@item.CreatedDate</td>
+                <td>
+                    @if (@item.Status == 1)
+                    {
+                        <span class="text text-success">Đơn hàng mới</span>
+                    }
+                    else
+                    {
+                        <span class="text text-danger">Đơn hàng thành công</span>
+                    }
+                </td>
+
+                <td>
+                    <a asp-action="ViewOrder" asp-controller="Order" asp-route-ordercode="@item.OrderCode" type="button" class="btn btn-success">View Order</a>
+               
+                </td>
+            </tr>
+            stt++;
+        }
+    </tbody>
+</table>
+
+
