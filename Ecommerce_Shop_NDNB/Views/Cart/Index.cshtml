@@ -62,6 +62,10 @@
 						<tr rowspan="5">
 							<td colspan="6"><p class="cart_total_price">Grand Total: @Model.GrandTotal.ToString()</p></td>
 							<td colspan="4"><a href="javascript:void(0);" onclick="confirmClearCart()" class="btn btn-outline-primary"><i class="fa-solid fa-trash"></i> Clear Cart</a></td>
+							@if(User.Identity?.IsAuthenticated ?? false)
+							{
+								<td colspan="6"><a asp-controller="Checkout" asp-action="Checkout">Checkout</a></td>
+							}
 						</tr>
 					}
 					else
