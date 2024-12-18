@@ -53,7 +53,8 @@ namespace Ecommerce_Shop_NDNB.Controllers
 				AppUserModel newUser = new AppUserModel
 				{
 					UserName = user.UserName,
-					Email = user.Email
+					Email = user.Email,
+                    PhoneNumber = user.Phone
 				};
 
 				// Tạo tài khoản với mật khẩu

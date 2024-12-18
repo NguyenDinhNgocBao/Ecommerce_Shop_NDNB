@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 {
-	[Area("Admin")]
-	[Authorize]
-	public class OrderController : Controller
+    [Area("Admin")]
+    [Authorize(Roles = "Admin,Sales")]
+    public class OrderController : Controller
 	{
 		private readonly DB_Context _dbContext;
 		public OrderController(DB_Context dbContext) {

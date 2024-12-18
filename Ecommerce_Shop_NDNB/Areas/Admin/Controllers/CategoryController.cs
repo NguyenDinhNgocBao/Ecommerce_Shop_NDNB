@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Sales")]
     public class CategoryController : Controller
 	{
 		private readonly DB_Context db_Context;

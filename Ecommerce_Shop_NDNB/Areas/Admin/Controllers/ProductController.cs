@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 {
-	[Area("Admin")]
-    [Authorize]
-	public class ProductController : Controller
+    [Area("Admin")]
+    [Authorize(Roles = "Admin,Sales")]
+    public class ProductController : Controller
 	{
 		private readonly DB_Context db_Context;
 		private readonly IWebHostEnvironment _webHostEnvironment;

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize]
+	[Authorize(Roles = "Admin,Sales")]
 	public class BrandController : Controller
     {
 		private readonly DB_Context db_Context;
@@ -15,6 +15,7 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 		{
 			db_Context = context;
 		}
+		[Route("Index")]
 		public async Task<IActionResult> Index()
 		{
             var brands = db_Context.Brands.ToList();
@@ -22,12 +23,13 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
         }
 
 		#region Create
+		[Route("Create")]
 		[HttpGet]
 		public IActionResult Create()
 		{
 			return View();
 		}
-
+		[Route("Create")]
 		[HttpPost]
 		public async Task<IActionResult> Create(BrandModel brand)
 		{
@@ -53,13 +55,14 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 		#endregion
 
 		#region Update
+		[Route("Update")]
 		[HttpGet]
 		public async Task<IActionResult> Update(int id)
 		{
 			BrandModel brand = await db_Context.Brands.FindAsync(id);
 			return View(brand);
 		}
-
+		[Route("Update")]
 		[HttpPost]
 		public async Task<IActionResult> Update(int Id, BrandModel brand)
 		{
