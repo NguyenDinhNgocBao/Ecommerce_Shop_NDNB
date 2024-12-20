@@ -1,4 +1,5 @@
 ﻿
+
 @{
     ViewData["title"] = "User List";
     int stt = 1;
@@ -41,6 +42,20 @@
         }
     </tbody>
 </table>
+<!-- Nút phân trang -->
+@if (ViewBag.Pager != null && ViewBag.Pager.TotalPages > 1)
+{
+        <div class="pagination-container">
+            <div class="pagination">
+            @for (int i = ViewBag.Pager.StartPage; i <= ViewBag.Pager.EndPage; i++)
+            {
+                        <a class="@(i == ViewBag.Pager.CurrentPage ? "active" : "")"
+                           href="@Url.Action("Index", new { pg = i })">@i</a>
+            }
+            </div>
+        </div>
+}
+
 <script>
     function confirmDelete(url) {
         Swal.fire({

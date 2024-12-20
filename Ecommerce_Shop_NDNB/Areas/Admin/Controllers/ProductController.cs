@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList.Extensions;
 
 namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 {
@@ -19,11 +20,45 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 			db_Context = context;
 			_webHostEnvironment = webHostEnvironment;
 		}
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(int pg = 1)
 		{
+            var product = db_Context.Products.Include(p => p.Category)
+                .Include(p => p.Brand)
+                .OrderByDescending(p => p.Id).AsQueryable();
+            int recsCount = await product.CountAsync();
 
-			return View(await db_Context.Products.OrderByDescending(p => p.Id).Include(p => p.Category).Include(p => p.Brand).ToListAsync());
-		}
+            const int pageSize = 10; //10 items/trang
+            var pager = new Paginate(recsCount, pg, pageSize);
+
+            if (pg < 1) //page < 1;
+            {
+                pg = Math.Clamp(pg, 1, pager.TotalPages);//Giới hạn tối đa giá trị trang
+            }
+
+            int recSkip = (pg - 1) * pageSize; //(3 - 1) * 10; // chia ra để lấy dữ liệu vdu: ở trang 2 sẽ lấy dữ liệu từ 10 -> 20
+
+            //category.Skip(20).Take(10).ToList()
+
+            var data = await product.Skip(recSkip).Take(pager.PageSize).ToListAsync();
+
+            ViewBag.Pager = pager;
+
+            return View(data);
+            /*
+            int pageSize = 10; // Số sản phẩm trên mỗi trang
+            int pageNumber = page ?? 1; // Trang hiện tại, mặc định là trang 1
+
+            var products = await db_Context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
+
+            var pagedProducts = products.ToPagedList(pageNumber, pageSize);
+
+            return View(pagedProducts);
+            */
+        }
         #region Create
         [HttpGet]
         public IActionResult Create()

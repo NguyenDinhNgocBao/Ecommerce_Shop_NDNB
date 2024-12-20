@@ -17,9 +17,29 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 		{
 			db_Context = context;
 		}
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(int pg = 1)
 		{
-			return View(await db_Context.Categories.OrderByDescending(p => p.Id).ToListAsync());
+            //List<CategoryModel> category = _dataContext.Categories.ToList(); //câu lệnh này tải toàn bộ dữ liệu từ bảng Categories vào bộ nhớ trước khi thực hiện phân trang,làm giảm hiệu năng nếu dữ liệu lớn.
+            var category = db_Context.Categories.AsQueryable();
+            int recsCount = await category.CountAsync();
+            
+            const int pageSize = 10; //10 items/trang
+            var pager = new Paginate(recsCount, pg, pageSize);
+
+            if (pg < 1) //page < 1;
+            {
+                pg = Math.Clamp(pg, 1, pager.TotalPages);//Giới hạn tối đa giá trị trang
+            }
+
+            int recSkip = (pg - 1) * pageSize; //(3 - 1) * 10; // chia ra để lấy dữ liệu vdu: ở trang 2 sẽ lấy dữ liệu từ 10 -> 20
+
+            //category.Skip(20).Take(10).ToList()
+
+            var data = await category.Skip(recSkip).Take(pager.PageSize).ToListAsync();
+
+            ViewBag.Pager = pager;
+
+            return View(data);
 		}
 
         #region Create

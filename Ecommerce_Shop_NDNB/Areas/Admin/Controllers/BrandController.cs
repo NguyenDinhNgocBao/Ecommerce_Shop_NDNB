@@ -15,15 +15,31 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 		{
 			db_Context = context;
 		}
-		[Route("Index")]
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(int pg = 1)
 		{
-            var brands = db_Context.Brands.ToList();
-            return View(brands);
+            var brand = db_Context.Brands.AsQueryable();
+            int recsCount = await brand.CountAsync();
+
+            const int pageSize = 10; //10 items/trang
+            var pager = new Paginate(recsCount, pg, pageSize);
+
+            if (pg < 1) //page < 1;
+            {
+                pg = Math.Clamp(pg, 1, pager.TotalPages);//Giới hạn tối đa giá trị trang
+            }
+
+            int recSkip = (pg - 1) * pageSize; //(3 - 1) * 10; // chia ra để lấy dữ liệu vdu: ở trang 2 sẽ lấy dữ liệu từ 10 -> 20
+
+            //category.Skip(20).Take(10).ToList()
+
+            var data = await brand.Skip(recSkip).Take(pager.PageSize).ToListAsync();
+
+            ViewBag.Pager = pager;
+
+            return View(data);
         }
 
 		#region Create
-		[Route("Create")]
 		[HttpGet]
 		public IActionResult Create()
 		{
@@ -55,14 +71,12 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 		#endregion
 
 		#region Update
-		[Route("Update")]
 		[HttpGet]
 		public async Task<IActionResult> Update(int id)
 		{
 			BrandModel brand = await db_Context.Brands.FindAsync(id);
 			return View(brand);
 		}
-		[Route("Update")]
 		[HttpPost]
 		public async Task<IActionResult> Update(int Id, BrandModel brand)
 		{

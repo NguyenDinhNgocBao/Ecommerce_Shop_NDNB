@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System.Drawing.Drawing2D;
+using X.PagedList.Extensions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
@@ -26,18 +27,42 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
             _dbContext = dB_Context;
 		}
         [HttpGet]
-		[Route("Index")]
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(int pg = 1)
 		{
+            var user = (from u in _dbContext.Users
+                              join ur in _dbContext.UserRoles on u.Id equals ur.UserId
+                              join r in _dbContext.Roles on ur.RoleId equals r.Id
+                              select new { User = u, RoleName = r.Name }).AsQueryable();
+            int recsCount = await user.CountAsync();
+
+            const int pageSize = 10; //10 items/trang
+            var pager = new Paginate(recsCount, pg, pageSize);
+
+            if (pg < 1) //page < 1;
+            {
+                pg = Math.Clamp(pg, 1, pager.TotalPages);//Giới hạn tối đa giá trị trang
+            }
+
+            int recSkip = (pg - 1) * pageSize; //(3 - 1) * 10; // chia ra để lấy dữ liệu vdu: ở trang 2 sẽ lấy dữ liệu từ 10 -> 20
+
+            //category.Skip(20).Take(10).ToList()
+
+            var data = await user.Skip(recSkip).Take(pager.PageSize).ToListAsync();
+
+            ViewBag.Pager = pager;
+
+            return View(data);
+            /* nếu ko dùng paginate
             var userWithRoles = await (from u in _dbContext.Users
                                        join ur in _dbContext.UserRoles on u.Id equals ur.UserId
                                        join r in _dbContext.Roles on ur.RoleId equals r.Id
                                        select new { User = u, RoleName = r.Name }).ToListAsync();
-			return View(userWithRoles);
-		}
+            
+            return View(userWithRoles);
+            */
+        }
         #region Tạo User
         [HttpGet]
-		[Route("Create")]
 		public async Task<IActionResult> Create()
 		{
 			var role = await _roleManager.Roles.ToListAsync();
@@ -46,7 +71,6 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 		}
         [HttpPost]
 		[ValidateAntiForgeryToken]
-        [Route("Create")]
         public async Task<IActionResult> Create(AppUserModel userModel)
         {
 			if(ModelState.IsValid)
@@ -120,7 +144,6 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
         }
         #endregion
         #region Update
-        [Route("Update")]
         [HttpGet]
         public async Task<IActionResult> Update(string Id)
         {
@@ -139,7 +162,6 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
         }
         
         [HttpPost]
-        [Route("Update")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(string Id, AppUserModel userModel)
         {
