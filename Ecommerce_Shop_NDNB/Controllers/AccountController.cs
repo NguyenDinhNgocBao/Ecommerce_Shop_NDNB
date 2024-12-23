@@ -2,6 +2,7 @@
 using Ecommerce_Shop_NDNB.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Ecommerce_Shop_NDNB.Controllers
 {
@@ -14,6 +15,26 @@ namespace Ecommerce_Shop_NDNB.Controllers
             _signinManage = signInManager;
             _userManage = userManager;  
         }
+
+        public async Task<IActionResult> Index()
+        {
+			if (User.Identity.IsAuthenticated)
+			{
+				// Lấy thông tin người dùng
+				var user = await _userManage.GetUserAsync(User);
+
+				// Tạo đối tượng UserModel từ thông tin người dùng
+				var model = new UserModel
+				{
+					UserName = user.UserName,
+					Email = await _userManage.GetEmailAsync(user),
+					Phone = user.PhoneNumber,
+					RoleId = user.RoleId // Nếu bạn có trường này trong User
+				};
+				return View(model);
+			}
+			return RedirectToAction("Login");
+		}
 
 		#region Đăng Nhập
 		public IActionResult Login(string returnUrl)
@@ -80,6 +101,79 @@ namespace Ecommerce_Shop_NDNB.Controllers
             await _signinManage.SignOutAsync();
             return Redirect(returnUrl);
         }
-		#endregion
-	}
+        #endregion
+
+        #region
+        [HttpGet("Account/Edit")]
+        public async Task<IActionResult> Edit()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                // Lấy thông tin người dùng
+                var user = await _userManage.GetUserAsync(User);
+
+                // Tạo đối tượng UserModel từ thông tin người dùng
+                var model = new EditAccountViewModel
+                {
+                    UserName = user.UserName,
+                    Email = await _userManage.GetEmailAsync(user),
+                    Phone = user.PhoneNumber
+                };
+                return View(model);
+            }
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost("Account/Edit")]
+        public async Task<IActionResult> Edit(EditAccountViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManage.GetUserAsync(User);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                // Cập nhật thông tin người dùng
+                user.UserName = model.UserName;
+                user.Email = model.Email;
+                user.PhoneNumber = model.Phone;
+                
+                // Xử lý thay đổi mật khẩu
+                if (!string.IsNullOrEmpty(model.CurrentPassword) && !string.IsNullOrEmpty(model.NewPassword))
+                {
+                    // Kiểm tra mật khẩu hiện tại
+                    var passwordCheck = await _userManage.CheckPasswordAsync(user, model.CurrentPassword);
+                    if (!passwordCheck)
+                    {
+                        ModelState.AddModelError("CurrentPassword", "Mật khẩu hiện tại không chính xác.");
+                        return View(model);
+                    }
+
+                    // Thay đổi mật khẩu
+                    var passwordChangeResult = await _userManage.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                    if (!passwordChangeResult.Succeeded)
+                    {
+                        foreach (var error in passwordChangeResult.Errors)
+                        {
+                            ModelState.AddModelError("", error.Description);
+                        }
+                        return View(model);
+                    }
+                }
+                
+                // Lưu các thay đổi
+                var result = await _userManage.UpdateAsync(user);
+                if (result.Succeeded)
+                {
+                    TempData["SuccessMessage"] = "Thông tin đã được cập nhật thành công!";
+                    return RedirectToAction("Index", "Account");
+                }
+                
+            }
+            return View(model);
+        }
+        #endregion
+    }
 }

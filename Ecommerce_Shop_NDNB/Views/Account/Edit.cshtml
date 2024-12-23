@@ -1,0 +1,64 @@
+﻿@model EditAccountViewModel
+@{
+    ViewData["title"] = "Cập nhật thông tin người dùng";
+}
+
+<form asp-action="Edit" method="post" class="p-4 border rounded shadow-sm bg-light">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <!-- Thông tin người dùng -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Tên đăng nhập</label>
+        <input class="form-control" asp-for="UserName" />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Email</label>
+        <input class="form-control" asp-for="Email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Số điện thoại</label>
+        <input class="form-control" asp-for="Phone" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+
+    <!-- Checkbox để hiển thị ô thay đổi mật khẩu -->
+    <div class="form-check mb-3">
+        <input type="checkbox" id="changePasswordCheckbox" class="form-check-input" />
+        <label for="changePasswordCheckbox" class="form-check-label">Thay đổi mật khẩu</label>
+    </div>
+
+    <!-- Thay đổi mật khẩu -->
+    <div id="passwordChangeSection" style="display: none;">
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Mật khẩu hiện tại</label>
+            <input type="password" class="form-control" asp-for="CurrentPassword" />
+            <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Mật khẩu mới</label>
+            <input type="password" class="form-control" asp-for="NewPassword" />
+            <span asp-validation-for="NewPassword" class="text-danger"></span>
+        </div>
+    </div>
+
+    <!-- Nút Submit -->
+    <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </div>
+</form>
+
+<script>
+    // JavaScript để hiển thị/ẩn phần thay đổi mật khẩu
+    document.getElementById("changePasswordCheckbox").addEventListener("change", function () {
+        const passwordSection = document.getElementById("passwordChangeSection");
+        if (this.checked) {
+            passwordSection.style.display = "block";
+        } else {
+            passwordSection.style.display = "none";
+        }
+    });
+</script>

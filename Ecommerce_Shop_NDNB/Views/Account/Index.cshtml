@@ -1,0 +1,54 @@
+﻿@model UserModel
+
+@{
+    ViewData["Title"] = "Thông Tin Người Dùng";
+}
+
+<h1 class="text-center my-5">Thông Tin Người Dùng</h1>
+
+@if (Model != null)
+{
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-lg border-0 rounded-lg">
+                    <div class="card-body p-4">
+                        <div class="mb-3 row">
+                            <label class="col-sm-4 col-form-label fw-bold">Tên đăng nhập:</label>
+                            <div class="col-sm-8">
+                                <p class="form-control-plaintext">@Model.UserName</p>
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label class="col-sm-4 col-form-label fw-bold">Email:</label>
+                            <div class="col-sm-8">
+                                <p class="form-control-plaintext">@Model.Email</p>
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label class="col-sm-4 col-form-label fw-bold">Số điện thoại:</label>
+                            <div class="col-sm-8">
+                                <p class="form-control-plaintext">@Model.Phone</p>
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label class="col-sm-4 col-form-label fw-bold">Vai trò:</label>
+                            <div class="col-sm-8">
+                                <p class="form-control-plaintext">@Model.RoleId</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a asp-action="Edit" asp-controller="Account" class="btn btn-success btn-lg px-5">Đổi Thông Tin</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning text-center">
+        <h4>Không có thông tin người dùng.</h4>
+    </div>
+}

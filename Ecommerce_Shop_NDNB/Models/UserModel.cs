@@ -16,5 +16,7 @@ namespace Ecommerce_Shop_NDNB.Models
         [DataType(DataType.Password), Required(ErrorMessage ="Nhập Mật Khẩu")]
 		public string Password { get; set; }
         public string RoleId { get; set; }
+
+       
     }
 }
