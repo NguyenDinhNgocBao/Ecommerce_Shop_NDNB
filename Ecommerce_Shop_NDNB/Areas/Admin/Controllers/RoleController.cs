@@ -80,14 +80,13 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(string Id)
         {
-            var role = await _db_Context.Roles.FindAsync(Id);
+            var role = await _roleManager.FindByIdAsync(Id);
             if (role == null)
             {
                 TempData["ErrorMessage"] = "Role not found.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index");
             }
-            _db_Context.Roles.Remove(role);
-            _db_Context.SaveChangesAsync();
+            await _roleManager.DeleteAsync(role);
             TempData["SuccessMessage"] = "Xóa thành công";
             return RedirectToAction("Index");
 

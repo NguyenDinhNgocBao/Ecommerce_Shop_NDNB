@@ -1,5 +1,7 @@
 ﻿@model IEnumerable<ProductModel>
 
+
+<partial name="_SliderPartial" />
 <div class="col-sm-3">
 	@Html.Partial("_Sidebar")
 </div>
@@ -25,12 +27,21 @@
 						<div class="productinfo text-center">
 							<a asp-action="Details" asp-controller="Product" asp-route-Id="@item.Id">
 								<img class="image-product" src="~/image/@item.Image" alt="" />
-								<h2>@item.Price</h2>
+                                <h2>@item.Price.ToString("#,##0 VND")</h2>
 								<p>@item.Name</p>
 								<p>Danh mục: @item.Category.Name</p>
 								<p>Thương hiệu: @item.Brand.Name</p>
 							</a>
-                            <button type="button" onclick="addToCart(@item.Id)" class="btn btn-defaut add-to-cart"><i class="fa-solid fa-cart-shopping"></i>Add to Cart</button>
+                            @if(@item.Quantity > 0)
+                            {
+                                <button type="button" onclick="addToCart(@item.Id)" class="btn btn-defaut add-to-cart"><i class="fa-solid fa-cart-shopping"></i>Add to Cart</button>
+                            }
+                            else
+                            {
+
+                                <button type="button"><i class="fa-solid fa-cart-shopping"></i>SOLD OUT</button>
+                            }
+
 						</div>
                         <!--
                             <div class="product-overlay">
@@ -43,11 +54,14 @@
                             -->
 					</div>
 				    <div class="choose">
-						<ul class="nav nav-pills nav-justified">
-							<li><a href="#"><i class="fa fa-plus-square"></i>Add to wishlist</a></li>
-							<li><a href="#"><i class="fa fa-plus-square"></i>Add to compare</a></li>
-						</ul>
-					</div>
+                        @if(User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <ul class="nav nav-pills nav-justified">
+							    <li><button onclick="addToWishList(@item.Id)" href="#"><i class="fa fa-plus-square add-wishlist"></i>Add to wishlist</button></li>
+							    <li><button onclick="addToCompare(@item.Id)" href="#"><i class="fa fa-plus-square add-compare"></i>Add to compare</button></li>
+						    </ul>
+                        }
+                    </div>
 				</div>
 			</div>
 		}
@@ -83,6 +97,73 @@
                     icon: 'error',
                     title: 'Error',
                     text: 'Không thể thêm sản phẩm vào giỏ hàng.'
+                });
+            }
+        });
+    }
+
+     function addToWishList(Id) {
+        $.ajax({
+            url: '/Home/AddToWishList', // Đường dẫn API
+            type: 'POST',
+            data: { id: Id },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    // Cập nhật số lượng sản phẩm hoặc hiển thị thông báo
+                    updateCartCount();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Có lỗi xảy ra.'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Không thể thêm sản phẩm vào danh sách yêu thích.'
+                });
+            }
+        });
+    }
+     function addToCompare(Id) {
+        $.ajax({
+            url: '/Home/AddToCompare', // Đường dẫn API
+            type: 'POST',
+            data: { id: Id },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    // Cập nhật số lượng sản phẩm hoặc hiển thị thông báo
+                    updateCartCount();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Có lỗi xảy ra.'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Không thể thêm sản phẩm vào danh sách so sánh'
                 });
             }
         });

@@ -194,5 +194,33 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
         #endregion
+        #region Add Quantity
+        [HttpGet]
+        public async Task<IActionResult> AddQuantity(int Id)
+        {
+            var productbyQuantity = await db_Context.ProductQuantities.Where(pq => pq.ProductId == Id).ToListAsync();
+            ViewBag.ProductByQuantity = productbyQuantity;
+            ViewBag.Id = Id;
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult StoreProductQuantity(ProductQuantityModel productQuantityModel)
+        {
+            var product = db_Context.Products.Find(productQuantityModel.ProductId);
+            if(product == null)
+            {
+                return NotFound();
+            }
+            product.Quantity += productQuantityModel.Quantity;
+
+            productQuantityModel.Quantity = productQuantityModel.Quantity;
+            productQuantityModel.ProductId = productQuantityModel.ProductId;
+            productQuantityModel.DateCreate = DateTime.Now;
+            db_Context.Add(productQuantityModel);
+            db_Context.SaveChanges();
+            return RedirectToAction("AddQuantity","Product", new { Id = productQuantityModel.ProductId });
+        }
+        #endregion
     }
 }

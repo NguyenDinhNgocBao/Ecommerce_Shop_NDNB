@@ -1,11 +1,12 @@
 ﻿@model IEnumerable<OrderDetails>
 @{
     ViewData["Title"] = "Chi tiết Đơn Hàng";
+    decimal total = 0;
 }
 
 <h1>Detail Order</h1>
 
-<table class="table">
+<table class="table" id="detail_order">
     <thead>
         <tr>
             <th scope="col">UserName</th>
@@ -17,10 +18,11 @@
         </tr>
     </thead>
     <tbody>
-
         @foreach (var item in Model)
         {
+            total += (item.Quantity * item.Price);
             <tr>
+                <input type="hidden" asp-for="@item.OrderCode" class="getId" />
                 <td>@item.UserName</td>
                 <td>@item.OrderCode</td>
                 <td>@item.Products.Name</td>
@@ -29,7 +31,73 @@
                 <td>$@(item.Quantity * item.Price)</td>
             </tr>
         }
+        <tr>
+            <
+            <td colspan="5">Total</td>
+            <td><h2>@total.ToString("C")</h2></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <select class="form-control select-update-order">
+                    <option value="1">Đơn Hàng Mới</option>
+                    <option value="0">Đã Xử Lý</option>
+                </select>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
     </tbody>
 </table>
 <a asp-action="Index" class="btn btn-secondary">Quay Lại</a>
 
+@section Scripts{
+    <!--Data Tablejs-->
+    <script>
+        new DataTable('#detail_order', {
+            layout: {
+                topStart: {
+                    buttons: ['pdf', 'print']
+                }
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('.select-update-order').change(function () {
+                var status = $(this).val(); //Lấy status của đơn hàng
+                var ordercode = $('.getId').val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("UpdateOrder")",
+                    data: { status: status, ordercode: ordercode },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: xhr.responseJSON ? xhr.responseJSON.message : 'Có lỗi xảy ra.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+};

@@ -1,14 +1,19 @@
-﻿using Ecommerce_Shop_NDNB.Models;
+﻿using Ecommerce_Shop_NDNB.Areas.Admin.Repository;
+using Ecommerce_Shop_NDNB.Models;
 using Ecommerce_Shop_NDNB.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Connect SQL
 builder.Services.AddDbContext<DB_Context>(options =>
 {
     options.UseSqlServer(builder.Configuration["ConnectionStrings:ConnectedDb"]);
 });
+
+//Add EmailSender
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

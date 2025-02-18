@@ -1,4 +1,5 @@
-﻿using Ecommerce_Shop_NDNB.Models;
+﻿using Ecommerce_Shop_NDNB.Areas.Admin.Repository;
+using Ecommerce_Shop_NDNB.Models;
 using Ecommerce_Shop_NDNB.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +11,11 @@ namespace Ecommerce_Shop_NDNB.Controllers
 	public class CheckoutController : Controller
 	{
 		private readonly DB_Context _dbContext;
-		public CheckoutController(DB_Context dbContext)
+		private readonly IEmailSender _emailSender;
+		public CheckoutController(DB_Context dbContext, IEmailSender emailSender)
 		{
 			_dbContext = dbContext;
+			_emailSender = emailSender;
 		}
 		[HttpGet]
 		public async Task<IActionResult> Checkout()
@@ -41,10 +44,24 @@ namespace Ecommerce_Shop_NDNB.Controllers
 					orderDetails.ProductId = cartItem.ProductId;
 					orderDetails.Price = cartItem.Price;
 					orderDetails.Quantity = cartItem.Quantity;
+
+					//update product quantity
+					var product =  _dbContext.Products.Where(p => p.Id == cartItem.ProductId).FirstOrDefault();
+					product.Quantity -= cartItem.Quantity;
+					product.Sold += cartItem.Quantity;
+					_dbContext.Update(product);
+
 					_dbContext.Add(orderDetails);
 					_dbContext.SaveChanges();
 				}
 				HttpContext.Session.Remove("Cart");
+
+				//Send Mail Order khi thành công
+				var receiver = userEmail;
+				var subject = "Đặt hành thành công";
+				var mesage = "Đặt hàng thành công, Chờ giao nhé";
+				await _emailSender.SendEmailAsync(receiver, subject, mesage);
+
 				TempData["success"] = "Checkout thành công, vui lòng chờ duyệt đơn hàng";
 				return RedirectToAction("Index", "Cart");
 			}

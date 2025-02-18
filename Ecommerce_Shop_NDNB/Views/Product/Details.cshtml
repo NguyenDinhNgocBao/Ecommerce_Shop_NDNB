@@ -1,4 +1,4 @@
-﻿
+﻿@model ProductDetailViewModel
 <div class="row">
 	<div class="col-sm-3">
 		@Html.Partial("_Sidebar")
@@ -9,7 +9,7 @@
 			<!--product-details-->
 			<div class="col-sm-5">
 				<div class="view-product">
-					<img src="~/image/@Model.Image" alt="" />
+					<img src="~/image/@Model.ProductDetails.Image" alt="" />
 					<h3>ZOOM</h3>
 				</div>
 				<div id="similar-product" class="carousel slide" data-ride="carousel">
@@ -47,17 +47,26 @@
 			<div class="col-sm-7">
 				<div class="product-information">
 					<!--/product-information-->
-					<h2>@Model.Name</h2>
+					<h2>@Model.ProductDetails.Name</h2>
 					<span>
-						<span>@Model.Price</span>
-						<label>Quantity:</label>
+						<span>@Model.ProductDetails.Price</span>
+						<label>Quantity: @Model.ProductDetails.Quantity</label>
 						<input type="text" value="1" />
-						<button type="button" onclick="addToCart(@Model.Id)" class="btn btn-defaut add-to-cart"><i class="fa-solid fa-cart-shopping"></i>Add to Cart</button>
+						@if(@Model.ProductDetails.Quantity > 0)
+						{
+							<button type="button" onclick="addToCart(@Model.ProductDetails.Id)" class="btn btn-defaut add-to-cart"><i class="fa-solid fa-cart-shopping"></i>Add to Cart</button>
+						}
+						else
+						{
+
+							<button type="button"><i class="fa-solid fa-cart-shopping"></i>SOLD OUT</button>
+						}
+						
 					</span>
 					<p><b>Availability:</b> In Stock</p>
 					<p><b>Condition:</b> New</p>
-					<p><b>Brand:</b> @Model.Brand.Name</p>
-					<p><b>Category:</b> @Model.Category.Name</p>
+					<p><b>Brand:</b> @Model.ProductDetails.Brand.Name</p>
+					<p><b>Category:</b> @Model.ProductDetails.Category.Name</p>
 					<a href=""><img src="images/product-details/share.png" class="share img-responsive" alt="" /></a>
 				</div><!--/product-information-->
 			</div>
@@ -70,12 +79,12 @@
 					<li class="active"><a href="#details" data-toggle="tab">Details</a></li>
 					<li><a href="#companyprofile" data-toggle="tab">Company Profile</a></li>
 					<li><a href="#tag" data-toggle="tab">Tag</a></li>
-					<li><a href="#reviews" data-toggle="tab">Reviews (5)</a></li>
+					<li><a href="#reviews" data-toggle="tab">Đánh Giá (5)</a></li>
 				</ul>
 			</div>
 			<div class="tab-content">
 				<div class="tab-pane fade active in" id="details">
-					@Model.Description 
+					@Model.ProductDetails.Description
 				</div>
 
 				<div class="tab-pane fade" id="companyprofile">
@@ -190,14 +199,19 @@
 						<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
 						<p><b>Write Your Review</b></p>
 
-						<form action="#">
+						<form autocomplete="off" asp-action="Evaluate" asp-controller="Product" method="post">
 							<span>
-								<input type="text" placeholder="Your Name" />
-								<input type="email" placeholder="Email Address" />
+								<input name="ProductId" asp-for="@Model.ProductDetails.Id" type="hidden"/>
+								<input name="Star" value="4" type="hidden"/>
+								<input asp-for="@Model.EvaluateDetails.Name" type="text" placeholder="Your Name" />
+								<span asp-validation-for="@Model.EvaluateDetails.Name" class="text-danger"></span>
+								<input asp-for="@Model.EvaluateDetails.Email" type="email" placeholder="Email Address" />
+								<span asp-validation-for="@Model.EvaluateDetails.Email" class="text-danger"></span>
 							</span>
-							<textarea name=""></textarea>
+							<textarea asp-for="@Model.EvaluateDetails.Comment"></textarea>
+							<span asp-validation-for="@Model.EvaluateDetails.Comment" class="text-danger"></span>
 							<b>Rating: </b> <img src="images/product-details/rating.png" alt="" />
-							<button type="button" class="btn btn-default pull-right">
+							<button type="submit" class="btn btn-default pull-right">
 								Submit
 							</button>
 						</form>
@@ -214,42 +228,23 @@
 			<div id="recommended-item-carousel" class="carousel slide" data-ride="carousel">
 				<div class="carousel-inner">
 					<div class="item active">
-						<div class="col-sm-4">
-							<div class="product-image-wrapper">
-								<div class="single-products">
-									<div class="productinfo text-center">
-										<img src="images/home/recommend1.jpg" alt="" />
-										<h2>$56</h2>
-										<p>Easy Polo Black Edition</p>
-										<button type="button" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</button>
+						@foreach(var related in ViewBag.RelatedProduct as IEnumerable<ProductModel>)
+						{
+							<div class="col-sm-4">
+								<div class="product-image-wrapper">
+									<div class="single-products">
+										<div class="productinfo text-center">
+											<a asp-action="Details" asp-controller="Product" asp-route-Id="@related.Id">
+												<img class="image-product" src="~/image/@related.Image" alt="" />
+												<h2>@related.Price.ToString("#,##0 VND")</h2>
+												<p>@related.Name</p>
+											</a>
+										</div>
 									</div>
 								</div>
 							</div>
-						</div>
-						<div class="col-sm-4">
-							<div class="product-image-wrapper">
-								<div class="single-products">
-									<div class="productinfo text-center">
-										<img src="images/home/recommend2.jpg" alt="" />
-										<h2>$56</h2>
-										<p>Easy Polo Black Edition</p>
-										<button type="button" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</button>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-sm-4">
-							<div class="product-image-wrapper">
-								<div class="single-products">
-									<div class="productinfo text-center">
-										<img src="images/home/recommend3.jpg" alt="" />
-										<h2>$56</h2>
-										<p>Easy Polo Black Edition</p>
-										<button type="button" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</button>
-									</div>
-								</div>
-							</div>
-						</div>
+						}
+						
 					</div>
 					<div class="item">
 						<div class="col-sm-4">

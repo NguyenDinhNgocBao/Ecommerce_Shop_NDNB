@@ -1,0 +1,98 @@
+﻿@model IEnumerable<SliderModel>
+@{
+    ViewData["title"] = "Brands List";
+    int stt = 1;
+}
+<h1>List Brands</h1>
+<div>
+    <a asp-action="Create" asp-controller="Slider" type="button" class="btn btn-primary btn-lg">Add</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Stt</th>
+            <th scope="col">Slider Name</th>
+            <th scope="col">Slider Description</th>
+            <th scope="col">Slider Image</th>
+            <th scope="col">Slider Status</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@stt</th>
+                <td>@item.Name</td>
+                <td>@Html.Raw(@item.Description)</td>
+                <td><img width="120" src="~/image/@item.Image" /></td>
+                <td>
+                    @if (@item.Status == 1)
+                    {
+                        <span class="text text-success">Show</span>
+                    }
+                    else
+                    {
+                        <span class="text text-danger">Hide</span>
+                    }
+                </td>
+
+                <td>
+                    <a asp-action="Update" asp-controller="Slider" asp-route-Id="@item.Id" type="button" class="btn btn-success">Edit</a>
+                    <button type="button" onclick="confirmDelete('@Url.Action("Delete", "Slider", new { Id = item.Id })')" class="btn btn-danger">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            stt++;
+        }
+    </tbody>
+</table>
+<!-- Nút phân trang -->
+@if (ViewBag.Pager != null && ViewBag.Pager.TotalPages > 1)
+{
+    <div class="pagination-container">
+        <div class="pagination">
+            @for (int i = ViewBag.Pager.StartPage; i <= ViewBag.Pager.EndPage; i++)
+            {
+                <a class="@(i == ViewBag.Pager.CurrentPage ? "active" : "")"
+                   href="@Url.Action("Index", new { pg = i })">@i</a>
+            }
+        </div>
+    </div>
+}
+
+
+<script>
+    function confirmDelete(url) {
+        Swal.fire({
+            title: 'Xóa SLider ?',
+            text: "Bạn có chắc muốn xóa Slider này không?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'Không',
+            confirmButtonText: 'Có'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+                    Swal.fire({
+                        icon: 'success',
+                    title: 'Thành công',
+                    text: '@TempData["SuccessMessage"]',
+                    timer: 3000,
+                    showConfirmButton: false
+                        });
+        </text>
+    }
+</script>

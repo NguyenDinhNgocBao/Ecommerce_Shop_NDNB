@@ -46,5 +46,26 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
 
             return View(detailOrder);
         }
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrder(string orderCode, int status)
+        {
+            if (string.IsNullOrEmpty(orderCode))
+            {
+                return BadRequest(new { message = "Mã đơn hàng không hợp lệ" });
+            }
+
+            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.OrderCode == orderCode);
+            if (order == null)
+            {
+                return NotFound(new { message = "Không tìm thấy đơn hàng" });
+            }
+
+            order.Status = status;
+            _dbContext.Orders.Update(order);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Cập nhật thành công" });
+        }
+
     }
 }

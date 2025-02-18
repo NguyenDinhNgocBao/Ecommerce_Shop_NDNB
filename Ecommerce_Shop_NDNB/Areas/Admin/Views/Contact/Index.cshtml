@@ -1,0 +1,47 @@
+﻿@model IEnumerable<ContactModel>
+@{
+    ViewData["title"] = "Contact List";
+    int stt = 1;
+}
+<h1>List Contact</h1>
+
+<table class="table" id="myTable">
+    <thead>
+        <tr>
+            <th scope="col">Stt</th>
+            <th scope="col">Name</th>
+            <th scope="col">Map</th>
+            <th scope="col">Email</th>
+            <th scope="col">PhoneNumber</th>
+            <th scope="col">Description</th>
+            <th scope="col">Product Image</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@stt</th>
+                <td>@item.Name</td>
+                <td>
+                    <div style="width: 200px; height: 120px; overflow: hidden;">
+                        @Html.Raw(@item.Map)
+                    </div>
+                </td>
+                <td>@item.Email</td>
+                <td>@item.PhoneNumber</td>
+                <td>@item.Description</td>
+                <td><img width="120" src="~/image/@item.LogoImg" /></td>
+                
+            </tr>
+            <td>
+                <a asp-action="Update" asp-controller="Contact" asp-route-Id="@item.ID" type="button" class="btn btn-success">Edit</a>
+            </td>
+            stt++;
+        }
+
+    </tbody>
+
+
+</table>

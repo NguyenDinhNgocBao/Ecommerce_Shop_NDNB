@@ -1,0 +1,28 @@
+﻿@model ContactModel
+
+<div class="row align-items-center">
+    <!-- Logo và thông tin công ty -->
+    <div class="col-md-3 text-center">
+        <h4 class="fw-bold">@Model.Name</h4>
+        <img class="rounded-circle shadow" height="100" width="100" src="~/image/@Model.LogoImg" alt="Company Logo" />
+        <p class="mt-2 small">@Html.Raw(Model.Description)</p>
+    </div>
+
+    <!-- Email và số điện thoại -->
+    <div class="col-md-4 text-center">
+        <h5 class="fw-bold">Liên hệ</h5>
+        <p class="mb-1"><i class="fas fa-envelope"></i> @Model.Email</p>
+        <p class="mb-0"><i class="fas fa-phone"></i> @Model.PhoneNumber</p>
+    </div>
+
+    <!-- Bản đồ -->
+    <div class="col-md-5 text-center">
+        <h5 class="fw-bold">Địa chỉ</h5>
+        <div style="display: flex; justify-content: center;">
+            <div class="rounded border" style="width: 200px; height: 120px; overflow: hidden;">
+                @Html.Raw(@Model.Map)
+            </div>
+        </div>
+        <p class="mt-2 small">36 Nguyen Nhu Chuong, Phu Thuong, Thuan Hoa, Hue</p>
+    </div>
+</div>

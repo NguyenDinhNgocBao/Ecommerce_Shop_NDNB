@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["title"] = "Compare";
+    int stt = 1;
+}
+<h1>Compare</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Stt</th>
+            <th scope="col">Product Name</th>
+            <th scope="col">Product Description</th>
+            <th scope="col">Product Price</th>
+            <th scope="col">Product Image</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var compare_Product in Model)
+        {
+            <tr>
+                <th scope="row">@stt</th>
+                <td>@compare_Product.ProductName</td> <!-- Đổi từ Name thành ProductName -->
+                <td>@compare_Product.Description</td>
+                <td>@compare_Product.Price</td>
+                <td><img width="120" src="~/image/@compare_Product.Image" /></td>
+                <td>
+                    <button type="button" onclick="confirmDelete('@Url.Action("DeleteCompare", "Compare", new { Id = compare_Product.CompareId })')" class="btn btn-danger">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            stt++;
+        }
+
+    </tbody>
+
+</table>
+<!-- Nút phân trang -->
+@if (ViewBag.Pager != null && ViewBag.Pager.TotalPages > 1)
+{
+    <div class="pagination-container">
+        <div class="pagination">
+            @for (int i = ViewBag.Pager.StartPage; i <= ViewBag.Pager.EndPage; i++)
+            {
+                <a class="@(i == ViewBag.Pager.CurrentPage ? "active" : "")"
+                   href="@Url.Action("Index", new { pg = i })">@i</a>
+            }
+        </div>
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<script>
+    function confirmDelete(url) {
+        Swal.fire({
+            title: 'Xóa Sản phẩm',
+            text: "Bạn có chắc muốn xóa Sản phẩm này không?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'Không',
+            confirmButtonText: 'Có'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+</script>

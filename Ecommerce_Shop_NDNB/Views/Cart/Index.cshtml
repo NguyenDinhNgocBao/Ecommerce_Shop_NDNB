@@ -1,6 +1,21 @@
 ﻿@using Ecommerce_Shop_NDNB.Models.ViewModels
 @model CartItemViewModel;
 
+<style type="text/css">
+	.css_select_div {
+		text-align: center;
+	}
+
+	.css_select {
+		display: inline-table;
+		width: 25%;
+		padding: 5px;
+		margin: 5px 2%;
+		border: solid 1px #686868;
+		border-radius: 5px;
+	}
+</style>
+
 <section id="cart_items">
 	<div class="container">
 		<div class="breadcrumbs">
@@ -34,7 +49,7 @@
 									<h3 class="text-primary">@item.ProductName</h3>
 								</td>
 								<td class="text-center align-middle">
-									<p class="h4">$@item.Price</p>
+									<p class="h4">$@item.Price.ToString("#,##0 VND")</p>
 								</td>
 								<td class="text-center align-middle">
 									<div class="d-flex justify-content-center align-items-center">
@@ -48,7 +63,7 @@
 									</div>
 								</td>
 								<td class="text-center align-middle">
-									<p class="h5">$@Model.CartItems.Where(x => x.ProductId == item.ProductId).Sum(x => x.Quantity * x.Price)</p>
+									<p class="h5">$@Model.CartItems.Where(x => x.ProductId == item.ProductId).Sum(x => x.Quantity * x.Price).ToString("#,##0 VND")</p>
 								</td>
 								<td class="text-center align-middle">
 									<a class="btn btn-danger btn-sm" asp-controller="Cart" asp-action="Remove" asp-route-id="@item.ProductId">
@@ -60,11 +75,37 @@
 						}
 
 						<tr rowspan="5">
-							<td colspan="6"><p class="cart_total_price">Grand Total: @Model.GrandTotal.ToString()</p></td>
+							<td colspan="6">
+								<p class="cart_total_price">Grand Total: @Model.GrandTotal.ToString()</p>
+								<span>Shipping Cost: @Model.ShippingCost.ToString()</span>
+								<p><a asp-action="DeleteShipping" asp-controller="Cart">Delete Shipping</a></p>
+							</td>
+							<td>
+								<div class="mb-3 form-group">
+									<label class="form-label fw-semibold">Tỉnh Thành</label>
+									<select class="css_select" id="tinh" name="tinh" title="Chọn Tỉnh Thành">
+										<option value="0">Tỉnh Thành</option>
+									</select>
+								</div>
+								<div class="mb-3 form-group">
+									<label class="form-label fw-semibold">Quận</label>
+									<select class="css_select" id="quan" name="quan" title="Chọn Quận Huyện">
+										<option value="0">Quận Huyện</option>
+									</select>
+								</div>
+								<div class="mb-3 form-group">
+									<label class="form-label fw-semibold">Phường</label>
+									<select class="css_select" id="phuong" name="phuong" title="Chọn Phường Xã">
+										<option value="0">Phường Xã</option>
+									</select>
+								</div>
+
+								<button type="button" class="btn btn-primary fw-bold px-4 btn-add-shipping">Submit</button>
+							</td>
 							<td colspan="4"><a href="javascript:void(0);" onclick="confirmClearCart()" class="btn btn-outline-primary"><i class="fa-solid fa-trash"></i> Clear Cart</a></td>
-							@if(User.Identity?.IsAuthenticated ?? false)
+							@if(User.Identity?.IsAuthenticated ?? false && Model.ShippingCost > 0)
 							{
-								<td colspan="6"><a asp-controller="Checkout" asp-action="Checkout">Checkout</a></td>
+								<td colspan="6"><a  asp-controller="Checkout" asp-action="Checkout">Đặt Hàng</a></td>
 							}
 						</tr>
 					}
@@ -82,6 +123,7 @@
 
 <!-- SweetAlert Script -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
 		var successMessage = '@Html.Raw(TempData["SuccessMessage"] ?? "")';
@@ -141,5 +183,69 @@
 				showConfirmButton: false
 		});
 	}
+	});
+</script>
+
+<script>
+	$(".btn-add-shipping").click(function () {
+		var provine = $("#tinh").find('option:selected').text();
+		var district = $("#quan").find('option:selected').text();
+		var ward = $("#phuong").find('option:selected').text();
+
+		if (provine == '' || district == '' || ward == '') {
+			Swal.fire("Không được bỏ trống")
+		} else {
+			$.ajax({
+				type: "POST",
+				url: "@Url.Action("GetShipping", "Cart")",
+				data: { provine: provine, district: district, ward: ward },
+				success: function (result) {
+					if (result.success) {
+						Swal.fire("Thành công")
+						location.reload();
+					} else if (result.duplicate) {
+						Swal.fire("Dữ liệu đã tồn tại")
+					}
+				}
+			})
+		}
+	})
+
+	$(document).ready(function () {
+		//Lấy tỉnh thành
+		$.getJSON('https://esgoo.net/api-tinhthanh/1/0.htm', function (data_tinh) {
+			if (data_tinh.error == 0) {
+				$.each(data_tinh.data, function (key_tinh, val_tinh) {
+					$("#tinh").append('<option value="' + val_tinh.id + '">' + val_tinh.full_name + '</option>');
+				});
+				$("#tinh").change(function (e) {
+					var idtinh = $(this).val();
+					//Lấy quận huyện
+					$.getJSON('https://esgoo.net/api-tinhthanh/2/' + idtinh + '.htm', function (data_quan) {
+						if (data_quan.error == 0) {
+							$("#quan").html('<option value="0">Quận Huyện</option>');
+							$("#phuong").html('<option value="0">Phường Xã</option>');
+							$.each(data_quan.data, function (key_quan, val_quan) {
+								$("#quan").append('<option value="' + val_quan.id + '">' + val_quan.full_name + '</option>');
+							});
+							//Lấy phường xã
+							$("#quan").change(function (e) {
+								var idquan = $(this).val();
+								$.getJSON('https://esgoo.net/api-tinhthanh/3/' + idquan + '.htm', function (data_phuong) {
+									if (data_phuong.error == 0) {
+										$("#phuong").html('<option value="0">Phường Xã</option>');
+										$.each(data_phuong.data, function (key_phuong, val_phuong) {
+											$("#phuong").append('<option value="' + val_phuong.id + '">' + val_phuong.full_name + '</option>');
+										});
+									}
+								});
+							});
+
+						}
+					});
+				});
+
+			}
+		});
 	});
 </script>

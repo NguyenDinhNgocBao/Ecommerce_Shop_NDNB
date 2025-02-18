@@ -2,6 +2,8 @@
 using Ecommerce_Shop_NDNB.Models.ViewModels;
 using Ecommerce_Shop_NDNB.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace Ecommerce_Shop_NDNB.Controllers
 {
@@ -16,10 +18,23 @@ namespace Ecommerce_Shop_NDNB.Controllers
 		{
 			List<CartItemModel> cartItems = HttpContext.Session.GetJson<List<CartItemModel>>("Cart") ??
 				new List<CartItemModel>();
+
+
+			//Nhận phí shipping từ cookie
+			var shippingPriceCookie = Request.Cookies["ShippingPrice"];
+			decimal shippingPrice = 0;
+			if (shippingPriceCookie != null)
+			{
+				var shippingPriceJson = shippingPriceCookie;
+				shippingPrice = JsonConvert.DeserializeObject<decimal>(shippingPriceJson);
+			}
+
+
 			CartItemViewModel cartVM = new()
 			{
 				CartItems = cartItems,
-				GrandTotal = cartItems.Sum(x => x.Quantity * x.Price)
+				GrandTotal = cartItems.Sum(x => x.Quantity * x.Price),
+				ShippingCost = shippingPrice
 			};
 			return View(cartVM);
 		}
@@ -32,7 +47,7 @@ namespace Ecommerce_Shop_NDNB.Controllers
 				new List<CartItemModel>();
 			CartItemModel cartItem = cart.Where(c => c.ProductId == Id).FirstOrDefault();
 
-			if(cartItem == null)
+			if (cartItem == null)
 			{
 				cart.Add(new CartItemModel(product));
 			}
@@ -42,16 +57,16 @@ namespace Ecommerce_Shop_NDNB.Controllers
 			}
 			HttpContext.Session.SetJson("Cart", cart);
 
-            // Trả về JSON để dùng cho AJAX
-            return Json(new { success = true, message = "Thêm sản phẩm vào giỏ hàng thành công" });
-        }
+			// Trả về JSON để dùng cho AJAX
+			return Json(new { success = true, message = "Thêm sản phẩm vào giỏ hàng thành công" });
+		}
 
-		public async Task<IActionResult> Decrease(int Id) 
+		public async Task<IActionResult> Decrease(int Id)
 		{
 			List<CartItemModel> cart = HttpContext.Session.GetJson<List<CartItemModel>>("Cart");
 			CartItemModel cartItem = cart.Where(c => c.ProductId == Id).FirstOrDefault();
 
-			if(cartItem.Quantity > 1)
+			if (cartItem.Quantity > 1)
 			{
 				--cartItem.Quantity;
 			}
@@ -59,7 +74,7 @@ namespace Ecommerce_Shop_NDNB.Controllers
 			{
 				cart.RemoveAll(c => c.ProductId == Id);
 			}
-			if(cart.Count == 0)
+			if (cart.Count == 0)
 			{
 				HttpContext.Session.Remove("Cart");
 			}
@@ -72,12 +87,18 @@ namespace Ecommerce_Shop_NDNB.Controllers
 		}
 		public async Task<IActionResult> Increase(int Id)
 		{
+			ProductModel product = await _dbContext.Products.Where(p => p.Id == Id).FirstOrDefaultAsync();
 			List<CartItemModel> cart = HttpContext.Session.GetJson<List<CartItemModel>>("Cart");
 			CartItemModel cartItem = cart.Where(c => c.ProductId == Id).FirstOrDefault();
 
-			if (cartItem.Quantity >= 1)
+			if (cartItem.Quantity >= 1 && cartItem.Quantity <= product.Quantity)
 			{
 				++cartItem.Quantity;
+			}
+			else
+			{
+				cartItem.Quantity = product.Quantity;
+				TempData["Error"] = "Số Lượng tối đa";
 			}
 			HttpContext.Session.SetJson("Cart", cart);
 
@@ -113,5 +134,44 @@ namespace Ecommerce_Shop_NDNB.Controllers
 			return RedirectToAction("Index");
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> GetShipping(ShippingModel shippingModel, string Province, string District, string Ward)
+		{
+			var existingShipping = await _dbContext.Shippings.FirstOrDefaultAsync(x => x.Province == Province && x.District == District && x.Ward == Ward);
+
+			decimal shippingPrice = 0;
+			if (existingShipping != null)
+			{
+				shippingPrice = existingShipping.Price;
+			}
+			else
+			{
+				shippingPrice = 30000;
+			}
+			var shippingPriceJson = JsonConvert.SerializeObject(shippingPrice);
+			try
+			{
+				var cookieOptions = new CookieOptions
+				{
+					HttpOnly = true,
+					Expires = DateTimeOffset.UtcNow.AddMinutes(30),
+					Secure = true, //using Https
+				};
+				Response.Cookies.Append("ShippingPrice", shippingPriceJson, cookieOptions);
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.ToString());
+			}
+			return Json(new { shippingPrice });
+		}
+
+		[HttpPost]
+		public IActionResult DeleteShipping()
+		{
+			Response.Cookies.Delete("ShippingPrice");
+			return RedirectToAction("Index");
+		}
 	}
 }

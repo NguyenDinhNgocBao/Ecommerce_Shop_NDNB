@@ -25,12 +25,20 @@
 						<div class="productinfo text-center">
 							<a asp-action="Details" asp-controller="Product" asp-route-Id="@item.Id">
 								<img class="image-product" src="~/image/@item.Image" alt="" />
-								<h2>@item.Price</h2>
+								<h2>@item.Price.ToString("#,##0 VND")</h2>
 								<p>@item.Name</p>
 								<p>Danh mục: @item.Category.Name</p>
 								<p>Thương hiệu: @item.Brand.Name</p>
 							</a>
-							<button type="button" onclick="addToCart(@item.Id)" class="btn btn-defaut add-to-cart"><i class="fa-solid fa-cart-shopping"></i>Add to Cart</button>
+							@if(@item.Quantity > 0)
+							{
+								<button type="button" onclick="addToCart(@item.Id)" class="btn btn-defaut add-to-cart"><i class="fa-solid fa-cart-shopping"></i>Add to Cart</button>
+							}
+							else
+							{
+
+								<button type="button"><i class="fa-solid fa-cart-shopping"></i>SOLD OUT</button>
+							}
 						</div>
 						<!--
 							<div class="product-overlay">
