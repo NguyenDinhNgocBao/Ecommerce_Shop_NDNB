@@ -4,6 +4,7 @@ using Ecommerce_Shop_NDNB.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Newtonsoft.Json;
 using System.Security.Claims;
 
 namespace Ecommerce_Shop_NDNB.Controllers
@@ -20,7 +21,16 @@ namespace Ecommerce_Shop_NDNB.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Checkout()
 		{
-			var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            //Nhận phí shipping từ cookie
+            var shippingPriceCookie = Request.Cookies["ShippingPrice"];
+            decimal shippingPrice = 0;
+            if (shippingPriceCookie != null)
+            {
+                var shippingPriceJson = shippingPriceCookie;
+                shippingPrice = JsonConvert.DeserializeObject<decimal>(shippingPriceJson);
+            }
+
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
 			if (userEmail == null) {
 				return RedirectToAction("Login","Account");
 			}	
@@ -29,6 +39,7 @@ namespace Ecommerce_Shop_NDNB.Controllers
 				var orderCode = Guid.NewGuid().ToString();
 				var orderItem = new OrderModel();
 				orderItem.OrderCode = orderCode;
+				orderItem.ShippingCost = shippingPrice;
 				orderItem.UserName = userEmail;
 				orderItem.Status = 1;
 				orderItem.CreatedDate = DateTime.Now;

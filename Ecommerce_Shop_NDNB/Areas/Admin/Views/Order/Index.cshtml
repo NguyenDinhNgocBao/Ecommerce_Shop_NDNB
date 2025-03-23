@@ -11,6 +11,7 @@
         <tr>
             <th scope="col">Stt</th>
             <th scope="col">Order Code</th>
+            <th scope="col">Shipping Cost</th>
             <th scope="col">UserName</th>
             <th scope="col">Order Date</th>
             <th scope="col">Order Status</th>
@@ -25,6 +26,7 @@
             <tr>
                 <th scope="row">@stt</th>
                 <td>@item.OrderCode</td>
+                <td>@item.ShippingCost.ToString("#, ##0 VND")</td>
                 <td>@item.UserName</td>
                 <td>@item.CreatedDate</td>
                 <td>

@@ -19,6 +19,7 @@ namespace Ecommerce_Shop_NDNB.Repository
 		public DbSet<WishListModel> WishLists { get; set; }
 		public DbSet<ProductQuantityModel> ProductQuantities { get; set; }
 		public DbSet<ShippingModel> Shippings { get; set; }
+		public DbSet<CouponModel> Coupons { get; set; }
 
 	}
 }

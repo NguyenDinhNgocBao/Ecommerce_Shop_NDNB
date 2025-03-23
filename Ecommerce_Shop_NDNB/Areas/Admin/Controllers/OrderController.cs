@@ -43,7 +43,9 @@ namespace Ecommerce_Shop_NDNB.Areas.Admin.Controllers
         public async Task<IActionResult> ViewOrder(string orderCode)
         {
 			var detailOrder = await _dbContext.OrderDetails.Include(p => p.Products).Where(pr => pr.OrderCode == orderCode).ToListAsync();
-
+            //Lấy Shipping Cost
+            var ShippingCost = _dbContext.Orders.Where(o => o.OrderCode == orderCode).First();
+            ViewBag.ShippingCost = ShippingCost.ShippingCost;
             return View(detailOrder);
         }
         [HttpPost]

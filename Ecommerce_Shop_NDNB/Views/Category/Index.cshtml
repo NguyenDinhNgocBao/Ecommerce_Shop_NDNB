@@ -14,6 +14,7 @@
 </style>
 
 <div class="col-sm-9 padding-right">
+	<partial name="_FilterPartial"/>
 	<div class="features_items">
 		<!--features_items-->
 		<h2 class="title text-center">Features Items</h2>
@@ -102,3 +103,64 @@
 		// Logic để cập nhật số lượng trong giỏ hàng, ví dụ: gọi AJAX để lấy số lượng hiện tại
 	}
 </script>
+
+@section Scripts {
+	<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+	<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+	<script>
+		$(document).ready(function () {
+			   // Function to format the number as currency (VND)
+				  function formatCurrency(value) {
+						 return new Intl.NumberFormat('vi-VN', {
+							 style: 'currency',
+							 currency: 'VND',
+						 }).format(value);
+					 }
+
+						// Slider for price range filtering
+					 $("#slider-range").slider({
+					  range: true,
+					  step: 10,
+						 min: 10,
+				   max: 100000,
+				   values: [10, 50000],
+				   slide: function (event, ui) {
+						  $("#amount").val(formatCurrency(ui.values[0]) + " - " + formatCurrency(ui.values[1]));
+					  }
+				  });
+
+				  // Initialize with the current slider values
+				  $("#amount").val(formatCurrency($("#slider-range").slider("values", 0)) + " - " + formatCurrency($("#slider-range").slider("values", 1)));
+
+			// Filter button functionality (Lọc Giá)
+			$('.btn-locgia').on('click', function () {
+				 var baseUrl = $(this).data("current_url");
+				  var startPrice = $("#slider-range").slider("values", 0);
+				  var endPrice = $("#slider-range").slider("values", 1);
+				  var sortBy = $('#sort_by').val();  // Get selected sort option
+
+				   // Construct the new URL with query parameters
+					  var url = baseUrl + "?startPrice=" + startPrice + "&endPrice=" + endPrice + "&sort_by=" + sortBy;
+
+						 // Redirect to the new URL with updated parameters
+					  window.location.href = url;
+					  return false;
+			   });
+
+			 // Sorting functionality when sort option changes
+			  $('#sort_by').on('change', function () {
+				  var baseUrl = $(this).val();
+				  var startPrice = $("#slider-range").slider("values", 0);
+				  var endPrice = $("#slider-range").slider("values", 1);
+
+				  // Construct the new URL with query parameters
+				  var url = baseUrl + "?startPrice=" + startPrice + "&endPrice=" + endPrice;
+
+				  // Redirect to the new URL with updated parameters
+				  window.location.href = url;
+			  });
+		  });
+	</script>
+
+
+}
