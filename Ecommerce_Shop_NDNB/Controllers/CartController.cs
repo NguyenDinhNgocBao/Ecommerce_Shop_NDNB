@@ -23,6 +23,10 @@ namespace Ecommerce_Shop_NDNB.Controllers
 			//Nhận phí shipping từ cookie
 			var shippingPriceCookie = Request.Cookies["ShippingPrice"];
 			decimal shippingPrice = 0;
+
+			//Nhận coupon code từ cookie
+			var coupon_code = Request.Cookies["CouponTitle"];
+
 			if (shippingPriceCookie != null)
 			{
 				var shippingPriceJson = shippingPriceCookie;
@@ -34,7 +38,8 @@ namespace Ecommerce_Shop_NDNB.Controllers
 			{
 				CartItems = cartItems,
 				GrandTotal = cartItems.Sum(x => x.Quantity * x.Price),
-				ShippingCost = shippingPrice
+				ShippingCost = shippingPrice,
+				CouponCode = coupon_code,
 			};
 			return View(cartVM);
 		}
@@ -172,6 +177,51 @@ namespace Ecommerce_Shop_NDNB.Controllers
 		{
 			Response.Cookies.Delete("ShippingPrice");
 			return RedirectToAction("Index");
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> GetCoupon(CouponModel couponModel, string coupon_value)
+		{
+			var validCoupon = await _dbContext.Coupons
+				.FirstOrDefaultAsync(x => x.Name == coupon_value && x.Quantity >= 1);
+
+			string couponTitle = validCoupon.Name + " | " + validCoupon?.Description;
+
+			if(couponModel != null)
+			{
+				TimeSpan remainingTime = validCoupon.DateEnd - DateTime.Now;
+				int daysRemaining = remainingTime.Days;
+
+				if(daysRemaining >= 0)
+				{
+					try
+					{
+						var cookieOptions = new CookieOptions
+						{
+							HttpOnly = true,
+							Expires = DateTimeOffset.UtcNow.AddMinutes(30),
+							Secure = true,
+							SameSite = SameSiteMode.Strict, // Kiểm tra tính tương thích với trình duyệt
+						};
+						Response.Cookies.Append("CouponTitle", couponTitle, cookieOptions);
+						return Ok(new {success = true, message = "Coupon applied successfully"});
+					}
+					catch (Exception ex) 
+					{
+						return Ok(new { success = false, message = "Coupon applied failed" });
+					}
+				}
+				else
+				{
+					return Ok(new { success = false, message = "Coupon has Expired" });
+				}
+			}
+			else
+			{
+				return Ok(new { success = false, message = "Coupon not Existed" });
+			}
+
+			return Json(new { CouponTitle = couponTitle });
 		}
 	}
 }

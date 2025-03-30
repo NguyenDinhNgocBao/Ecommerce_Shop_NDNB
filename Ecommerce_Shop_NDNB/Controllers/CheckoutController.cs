@@ -24,7 +24,10 @@ namespace Ecommerce_Shop_NDNB.Controllers
             //Nhận phí shipping từ cookie
             var shippingPriceCookie = Request.Cookies["ShippingPrice"];
             decimal shippingPrice = 0;
-            if (shippingPriceCookie != null)
+			//Nhận coupon code từ cookie
+			var coupon_code = Request.Cookies["CouponTitle"];
+
+			if (shippingPriceCookie != null)
             {
                 var shippingPriceJson = shippingPriceCookie;
                 shippingPrice = JsonConvert.DeserializeObject<decimal>(shippingPriceJson);
@@ -40,6 +43,7 @@ namespace Ecommerce_Shop_NDNB.Controllers
 				var orderItem = new OrderModel();
 				orderItem.OrderCode = orderCode;
 				orderItem.ShippingCost = shippingPrice;
+				orderItem.CouponCode = coupon_code;
 				orderItem.UserName = userEmail;
 				orderItem.Status = 1;
 				orderItem.CreatedDate = DateTime.Now;

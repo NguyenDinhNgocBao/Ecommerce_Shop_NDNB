@@ -1,8 +1,9 @@
 ﻿@model CouponModel;
 @{
     ViewData["title"] = "Create Coupon";
+    int stt = 1;
 }
-<form asp-action="Index" asp-controller="CouponController" autocomplete="off" enctype="multipart/form-data" class="p-4 border rounded shadow-sm bg-light">
+<form asp-action="Index" asp-controller="Coupon" autocomplete="off" enctype="multipart/form-data" class="p-4 border rounded shadow-sm bg-light">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <div class="mb-3 form-group">
         <label class="form-label fw-semibold">Name</label>
@@ -13,11 +14,6 @@
         <label class="form-label fw-semibold">Description</label>
         <input class="form-control" asp-for="Description" />
         <span asp-validation-for="Description" class="text-danger" />
-    </div>
-    <div class="mb-3 form-group">
-        <label class="form-label fw-semibold">Price</label>
-        <input class="form-control" min="1" type="number" asp-for="Price" />
-        <span asp-validation-for="Price" class="text-danger" />
     </div>
     <div class="mb-3 form-group">
         <label class="form-label fw-semibold">Quantity</label>
@@ -45,8 +41,123 @@
 
     <div class="d-flex justify-content-between">
         <button type="submit" class="btn btn-primary fw-bold px-4">Submit</button>
-        <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">Back to List</a>
     </div>
 </form>
+<h5 class="mt-5">List Coupon</h5>
+<table class="table" id="myTable">
+    <thead>
+        <tr>
+            <th scope="col">Stt</th>
+            <th scope="col">Coupon Name</th>
+            <th scope="col">Coupon Description</th>
+            <th scope="col">Date Start</th>
+            <th scope="col">Date Expried</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Active</th>
+            <th scope="col">Status</th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in ViewBag.CouponList)
+        {
+            <tr>
+                <th scope="row">@stt</th>
+                <td>@item.Name</td>
+                <td>@Html.Raw(@item.Description)</td>
+                <td>@item.DateStart.ToString("dd-MM-yyyy")</td>
+                <td>@item.DateEnd.ToString("dd-MM-yyyy")</td>
+                <td>@item.Quantity</td>
+                <td>
+                    @if (@item.Status == 1)
+                    {
+                        <select name="Status">
+                            <option selected value="1">Kích hoạt</option>
+                            <option value="0">Ẩn</option>
+                        </select>
+                    }
+                    else
+                    {
+                        <select name="Status">
+                            <option value="1">Kích hoạt</option>
+                            <option selected value="0">Ẩn</option>
+                        </select>
+                    }
+                </td>
+                <td>
+                    @if (item.DateEnd < DateTime.Now)
+                    {
+                        <span class="text text-danger">Expried</span>
+                    }
+                    else{
+                        TimeSpan remainingTime = item.DateEnd - DateTime.Now;
+                        int dayRemaining = remainingTime.Days;
+                        @if(dayRemaining == 0)
+                        {
+                            <span class="text text-danger">Today</span>
+                        }else{
+                            <span class="text text-success">@dayRemaining days left</span>
+                        }
+                    }
+                    </td>
+
+                <td>
+                    <a asp-action="Update" asp-controller="Brand" asp-route-Id="@item.Id" type="button" class="btn btn-success">Edit</a>
+                    <button type="button" onclick="confirmDelete('@Url.Action("Delete", "Brand", new { Id = item.Id })')" class="btn btn-danger">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            stt++;
+        }
+    </tbody>
+</table>
+<!-- Nút phân trang -->
+@if (ViewBag.Pager != null && ViewBag.Pager.TotalPages > 1)
+{
+    <div class="pagination-container">
+        <div class="pagination">
+            @for (int i = ViewBag.Pager.StartPage; i <= ViewBag.Pager.EndPage; i++)
+            {
+                <a class="@(i == ViewBag.Pager.CurrentPage ? "active" : "")"
+                   href="@Url.Action("Index", new { pg = i })">@i</a>
+            }
+        </div>
+    </div>
+}
+
+
+<script>
+    function confirmDelete(url) {
+        Swal.fire({
+            title: 'Xóa Thương Hiệu',
+            text: "Bạn có chắc muốn xóa Thương Hiệu này không?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'Không',
+            confirmButtonText: 'Có'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'success',
+                title: 'Thành công',
+                text: '@TempData["SuccessMessage"]',
+                timer: 3000,
+                showConfirmButton: false
+                            });
+        </text>
+    }
+</script>
 
 

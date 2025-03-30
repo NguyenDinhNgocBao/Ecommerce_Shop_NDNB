@@ -77,6 +77,12 @@
 						<tr rowspan="5">
 							<td colspan="6">
 								<p class="cart_total_price">Grand Total: @Model.GrandTotal.ToString()</p>
+								<form>
+									Coupon Code: <input type="text" class="form-control coupon-value"/>
+												 <span class="text text-success">@Model.CouponCode</span> <br />
+
+									<input type="button" value="Apply" class="btn btn-sm btn-apply-coupon btn-primary" />
+								</form>
 								<span>Shipping Cost: @Model.ShippingCost.ToString()</span>
 								<p><a asp-action="DeleteShipping" asp-controller="Cart">Delete Shipping</a></p>
 							</td>
@@ -248,4 +254,25 @@
 			}
 		});
 	});
+</script>
+
+<script>
+	//delete shipping cost
+	$(".btn-apply-coupon").click(function(){
+		var coupon_value = $(".coupon-value").val();
+		//alert(coupon_value);
+		$.ajax({
+			type: "POST",
+			url: "@Url.Action("GetCoupon", "Cart")",
+			data: { coupon_value: coupon_value },
+			success: function (result) {
+				if (result.success) {
+					Swal.fire(result.message);
+					location.reload();
+				}else{
+					Swal.fire(result.message);
+				}
+			}
+		})
+	})
 </script>
